@@ -1,6 +1,15 @@
-const { exec, ChildProcess } = require('node:child_process');
+const { exec } = require('node:child_process');
+const path = require('path');
 const stream = require('stream');
 const app = require('express')();
+
+const config = require('./flint-config.json');
+
+const mcStartScriptFilePath = path.join(
+	__dirname,
+	config.mc.startScriptLocation
+);
+const mcServerFolderPath = path.dirname(mcStartScriptFilePath);
 
 /**
  * @type {ChildProcess}
@@ -14,9 +23,23 @@ app.post('/api/server', (req, res) => {
 	if (!child_process || !isRunning) {
 		isRunning = true;
 
-		child_process = exec('./start.sh', (err) => {
-			if (err) isRunning = false;
-		});
+		child_process = exec(
+			mcStartScriptFilePath,
+			{
+				cwd: mcServerFolderPath,
+				windowsHide: true,
+			},
+			(err, stdout, stderr) => {
+				if (err) {
+					console.log(err);
+					isRunning = false;
+				}
+
+				if (stderr) {
+					console.log(stderr);
+				}
+			}
+		);
 
 		child_process.on('exit', (code, sig) => {
 			isRunning = false;
@@ -45,6 +68,6 @@ app.delete('/api/server', (req, res) => {
 	res.sendStatus(200);
 });
 
-app.listen('8080', () => {
+app.listen(config.api.port, () => {
 	console.log('Server is running!');
 });
