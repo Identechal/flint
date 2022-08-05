@@ -5,7 +5,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Identechal LLC",
+  "author": "Identechal LLC <team@identechal.com> (http://identechal.com)",
+  "contributors": [
+    "Jacob Brokaw <jacob@identechal.com> (jacobbrokaw.com)",
+    "Nicholas Brokaw <nicholas@identechal.com> (nicholasbrokaw.com)"
+  ],
   "license": "GPL-3.0-only",
   "dependencies": {
     "express": "^4.18.1"
