@@ -2,8 +2,10 @@
   "name": "flint",
   "version": "1.0.0",
   "main": "index.js",
+  "bin": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "pkg ."
   },
   "author": "Identechal LLC <team@identechal.com> (http://identechal.com)",
   "contributors": [
@@ -14,7 +16,9 @@
   "dependencies": {
     "express": "^4.18.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "pkg": "^5.8.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/Identechal/flint.git"
@@ -23,5 +27,8 @@
     "url": "https://github.com/Identechal/flint/issues"
   },
   "homepage": "https://github.com/Identechal/flint#readme",
-  "description": ""
+  "description": "",
+  "pkg": {
+    "outputPath": "dist"
+  }
 }
