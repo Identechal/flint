@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Identechal LLC",
-  "license": "CC-BY-NC-SA-4.0",
+  "license": "GPL-3.0-only",
   "dependencies": {
     "express": "^4.18.1"
   },
