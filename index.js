@@ -7,7 +7,7 @@ const config = require('./flint-config.json');
 
 const mcStartScriptFilePath = path.join(
 	__dirname,
-	config.mc.startScriptLocation
+	config.mc.startScript
 );
 const mcServerFolderPath = path.dirname(mcStartScriptFilePath);
 
