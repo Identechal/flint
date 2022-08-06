@@ -15,76 +15,70 @@
 // You should have received a copy of the GNU General Public License
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
-const { exec } = require('node:child_process');
-const path = require('path');
-const stream = require('stream');
-const app = require('express')();
+// Required modules
+import express from 'express';
 
-const config = require('./flint-config.json');
+// Configuration files
+import config from './flint-config.json' assert { type: 'json' };
+import { MCServer } from './models/mc/MCServer.js';
+import {
+  CannotStartError,
+  CannotStopError,
+} from './models/mc/MCServerError.js';
 
-const mcStartScriptFilePath = path.join(
-	__dirname,
-	config.mc.startScript
-);
-const mcServerFolderPath = path.dirname(mcStartScriptFilePath);
+const app = express();
 
-/**
- * @type {ChildProcess}
- */
-let child_process = null;
-
-let isRunning = false;
+const mcServer = new MCServer(config.mc);
 
 // Start
 app.post('/api/server', (req, res) => {
-	if (!child_process || !isRunning) {
-		isRunning = true;
+  try {
+    mcServer.start();
+  } catch (error) {
+    // TODO: make real error body
+    if (error instanceof CannotStartError) {
+      res.status(400).json({
+        error: error.message,
+      });
+    } else {
+      res.status(500).json({
+        error: error.message,
+      });
+    }
 
-		child_process = exec(
-			mcStartScriptFilePath,
-			{
-				cwd: mcServerFolderPath,
-				windowsHide: true,
-			},
-			(err, stdout, stderr) => {
-				if (err) {
-					console.log(err);
-					isRunning = false;
-				}
+    return;
+  }
 
-				if (stderr) {
-					console.log(stderr);
-				}
-			}
-		);
-
-		child_process.on('exit', (code, sig) => {
-			isRunning = false;
-		});
-
-		child_process.stdout.on('data', console.log);
-		process.stdin.pipe(child_process.stdin);
-
-		console.log('MC server has been told to start');
-	}
-
-	res.sendStatus(200);
+  res.sendStatus(202);
 });
 
 // Stop
 app.delete('/api/server', (req, res) => {
-	if (child_process && isRunning) {
-		const readable = new stream.Readable();
-		readable.push('stop');
-		readable.push(null);
-		readable.pipe(child_process.stdin);
+  try {
+    mcServer.stop();
+  } catch (error) {
+    // TODO: make real error body
+    if (error instanceof CannotStopError) {
+      res.status(400).json({
+        error: error.message,
+      });
+    } else {
+      res.status(500).json({
+        error: error.message,
+      });
+    }
 
-		console.log('MC server has been told to stop');
-	}
+    return;
+  }
 
-	res.sendStatus(200);
+  res.sendStatus(202);
+});
+
+// Details
+app.get('/api/server', (req, res) => {
+  res.status(200).json(mcServer.status);
 });
 
 app.listen(config.api.port, () => {
-	console.log('Server is running!');
+  console.log('Server is running!');
 });
