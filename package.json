@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "type": "module",
   "main": "index.js",
-  "bin": "index.js",
+  "bin": "bundle.cjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "pkg ."
+    "rollup": "rollup -c",
+    "build": "rollup -c && pkg ."
   },
   "author": "Identechal LLC <team@identechal.com> (http://identechal.com)",
   "contributors": [
@@ -18,7 +19,11 @@
     "express": "^4.18.1"
   },
   "devDependencies": {
-    "pkg": "^5.8.0"
+    "@rollup/plugin-commonjs": "^22.0.2",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "pkg": "^5.8.0",
+    "rollup": "^2.77.2"
   },
   "repository": {
     "type": "git",
