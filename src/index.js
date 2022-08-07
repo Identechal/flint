@@ -22,10 +22,7 @@ import { join } from 'path';
 // Configuration files
 const config = require(join(process.cwd(), 'flint-config.json'));
 import { MCServer } from './models/mc/MCServer.js';
-import {
-  CannotStartError,
-  CannotStopError,
-} from './models/mc/MCServerError.js';
+import { CannotStartError, CannotStopError } from './models/mc/MCServerError.js';
 
 const app = express();
 

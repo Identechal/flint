@@ -30,9 +30,7 @@ export class MCServer {
   /** @type {MCServerStatus} */
   #status;
 
-  /**
-   * @param {{startScript:String}} config The MC server process config from `flint-config.json`.
-   */
+  /** @param {{ startScript: String }} config The MC server process config from `flint-config.json`. */
   constructor(config) {
     this.#startScript = join(process.cwd(), config.startScript);
     this.#process = null;
@@ -44,9 +42,7 @@ export class MCServer {
     return this.#status;
   }
 
-  /**
-   * @throws {CannotStartError} Thrown if the MC server is not {@link MCServerStatus.STOPPED stopped}.
-   */
+  /** @throws {CannotStartError} Thrown if the MC server is not {@link MCServerStatus.STOPPED stopped}. */
   start() {
     if (this.#status !== MCServerStatus.STOPPED) {
       throw new CannotStartError(this.#status);
@@ -87,8 +83,7 @@ export class MCServer {
     this.#process.on('exit', (code, signal) => {
       if (code !== null) {
         console.log('MC server exited with code: ', code);
-        this.#status =
-          code === 0 ? MCServerStatus.STOPPED : MCServerStatus.CRASHED;
+        this.#status = code === 0 ? MCServerStatus.STOPPED : MCServerStatus.CRASHED;
       } else {
         console.log('MC server exited with signal: ', signal);
         this.#status = MCServerStatus.CRASHED;
@@ -99,9 +94,7 @@ export class MCServer {
     process.stdin.pipe(this.#process.stdin);
   }
 
-  /**
-   * @throws {CannotStopError} Thrown if the MC server is not {@link MCServerStatus.RUNNING running}.
-   */
+  /** @throws {CannotStopError} Thrown if the MC server is not {@link MCServerStatus.RUNNING running}. */
   stop() {
     if (this.#status !== MCServerStatus.RUNNING) {
       throw new CannotStopError(this.#status);
