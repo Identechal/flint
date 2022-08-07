@@ -2,8 +2,8 @@
   "name": "flint",
   "version": "1.0.0",
   "type": "module",
-  "main": "index.js",
-  "bin": "bundle.cjs",
+  "main": "src/index.js",
+  "bin": "build/bundle.cjs",
   "engines": {
     "node": "18"
   },
