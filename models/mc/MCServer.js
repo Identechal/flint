@@ -37,6 +37,9 @@ export class MCServer {
     this.#startScript = join(process.cwd(), config.startScript);
     this.#process = null;
     this.#status = MCServerStatus.STOPPED;
+
+    // Listen for 'start' command
+    process.stdin.on('data', this.#startCmdListener);
   }
 
   /** @returns {MCServerStatus} */
@@ -45,10 +48,10 @@ export class MCServer {
   }
 
   /**
-   * @throws {CannotStartError} Thrown if the MC server is not {@link MCServerStatus.STOPPED stopped}.
+   * @throws {CannotStartError} Thrown if the MC server is not in a startable status.
    */
   start() {
-    if (this.#status !== MCServerStatus.STOPPED) {
+    if (!this.#status.canStart) {
       throw new CannotStartError(this.#status);
     }
 
@@ -62,48 +65,41 @@ export class MCServer {
         cwd: dirname(this.#startScript),
         windowsHide: true,
       },
-      (error, _stdout, stderr) => {
+      (error) => {
         if (error) {
           console.error(error);
-          this.#status = MCServerStatus.STOPPED;
-        } else if (stderr) {
-          console.error(`Logging from callback: ${stderr}`);
-          this.#status = MCServerStatus.STOPPED;
+          this.#status = MCServerStatus.CRASHED;
         }
       }
     );
 
-    // Add event listeners
-    this.#process.stderr.on('data', (chunk) => {
-      console.error(`Erroring from listener: ${chunk}`);
-    });
-
-    // this.#process.stdout.on('data', (chunk) => {
-    //   // console.log(`Logging from listener: ${chunk}`);
-    // });
-
+    // Connect output streams
     this.#process.stdout.pipe(process.stdout);
 
+    // Listen for exit
     this.#process.on('exit', (code, signal) => {
       if (code !== null) {
-        console.log('MC server exited with code: ', code);
+        console.log(`MC server exited with code: ${code}`);
         this.#status =
           code === 0 ? MCServerStatus.STOPPED : MCServerStatus.CRASHED;
       } else {
-        console.log('MC server exited with signal: ', signal);
+        console.log(`MC server exited with signal: ${signal}`);
         this.#status = MCServerStatus.CRASHED;
       }
+
+      // Flint terminal -/-> MC input
+      process.stdin.unpipe(this.#process.stdin).resume();
     });
 
-    // Connect input streams
+    // Flint terminal --> MC input
     process.stdin.pipe(this.#process.stdin);
   }
 
   /**
-   * @throws {CannotStopError} Thrown if the MC server is not {@link MCServerStatus.RUNNING running}.
+   * @throws {CannotStopError} Thrown if the MC server is not in a stoppable status.
    */
   stop() {
-    if (this.#status !== MCServerStatus.RUNNING) {
+    if (!this.#status.canStop) {
       throw new CannotStopError(this.#status);
     }
 
@@ -112,5 +108,22 @@ export class MCServer {
     stopStream.push('stop');
     stopStream.push(null);
     stopStream.pipe(this.#process.stdin);
+  }
+
+  // stdin listeners
+  get #startCmdListener() {
+    const thisArg = this;
+    /**
+     * @param {Buffer} data
+     */
+    return (data) => {
+      if (data.toString().trim() === 'start') {
+        try {
+          thisArg.start();
+        } catch (ignored) {
+          console.error(ignored);
+        }
+      }
+    };
   }
 }

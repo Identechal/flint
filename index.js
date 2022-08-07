@@ -27,9 +27,9 @@ import {
   CannotStopError,
 } from './models/mc/MCServerError.js';
 
-const app = express();
-
 const mcServer = new MCServer(config.mc);
+
+const app = express();
 
 // Start
 app.post('/api/server', (req, res) => {
