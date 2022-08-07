@@ -30,11 +30,20 @@ export class MCServer {
   /** @type {MCServerStatus} */
   #status;
 
-  /** @param {{ startScript: String }} config The MC server process config from `flint-config.json`. */
+  /**
+   * @param {Object} config The MC server process config from `flint-config.json`.
+   * @param {boolean} config.autoStart Whether the MC server will automatically start during Flint's launch.
+   * @param {string} config.startScript Path of the MC server startup script relative to the
+   *   current working directory (where Flint was launched)
+   */
   constructor(config) {
     this.#startScript = join(process.cwd(), config.startScript);
     this.#process = null;
     this.#status = MCServerStatus.STOPPED;
+
+    if (config.autoStart) {
+      this.start();
+    }
   }
 
   /** @returns {MCServerStatus} */
