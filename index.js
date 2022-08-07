@@ -17,9 +17,10 @@
 
 // Required modules
 import express from 'express';
+import { join } from 'path';
 
 // Configuration files
-import config from './flint-config.json' assert { type: 'json' };
+const config = require(join(process.cwd(), 'flint-config.json'));
 import { MCServer } from './models/mc/MCServer.js';
 import {
   CannotStartError,

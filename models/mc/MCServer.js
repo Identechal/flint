@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChildProcess, exec } from 'child_process';
+import { exec } from 'child_process';
 import { join, dirname } from 'path';
 import { Readable } from 'stream';
 
@@ -25,7 +25,7 @@ import { CannotStartError, CannotStopError } from './MCServerError.js';
 export class MCServer {
   /** @type {String} */
   #startScript;
-  /** @type {ChildProcess} */
+  /** @type {import('child_process').ChildProcess} */
   #process;
   /** @type {MCServerStatus} */
   #status;
