@@ -17,7 +17,7 @@
 
 /**
  * @readonly
- * @enum {{name:String,canStart:Boolean,canStop:Boolean}}
+ * @enum {{ name: String; canStart: Boolean; canStop: Boolean }}
  */
 export const MCServerStatus = {
   STARTING: {

@@ -8,6 +8,7 @@
     "node": "18"
   },
   "scripts": {
+    "format": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "rollup": "rollup -c",
     "build": "rollup -c && pkg ."
@@ -26,6 +27,8 @@
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "pkg": "^5.8.0",
+    "prettier": "2.7.1",
+    "prettier-plugin-jsdoc": "^0.3.38",
     "rollup": "^2.77.2"
   },
   "repository": {

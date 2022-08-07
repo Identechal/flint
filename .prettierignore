@@ -1,1 +1,15 @@
 LICENSE
+
+# Build
+dist/
+build/
+
+# External
+flint-config.json
+
+# npm
+package-lock.json
+.npmrc
+
+# git
+.gitignore
