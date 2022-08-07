@@ -21,6 +21,6 @@ node_modules/
 # Flint configuration
 flint-config.json
 
-# Rollup + Build
-bundle.cjs
+# Build files
+build/
 dist/
