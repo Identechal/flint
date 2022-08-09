@@ -78,7 +78,15 @@ export class MCServer {
       }
     );
 
-    // Connect output streams
+    this.#process.stdout.on('data', (data) => {
+      if (/abc/.test(data)) { // TODO: test for presence of 'DONE'
+        this.#status = MCServerStatus.RUNNING;
+
+        // TODO: stop receiving 'data' events
+      }
+    }).pipe(process.stdout); // TODO: maybe resume?
+
+    // MC output --> Flint output
     this.#process.stdout.pipe(process.stdout);
 
     // Listen for exit
