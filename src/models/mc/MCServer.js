@@ -23,18 +23,31 @@ import { MCServerStatus } from './MCServerStatus.js';
 import { CannotStartError, CannotStopError } from './MCServerError.js';
 
 export class MCServer {
+  //#region Constants
+  #DONE_PATTERN =
+    /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: Done \([^)]+\)! For help, type "help"\n?$/;
+  //#endregion
+
+  //#region Fields
   /** @type {String} */
   #startScript;
+
   /** @type {import('child_process').ChildProcess} */
   #process;
+
   /** @type {MCServerStatus} */
   #status;
+
+  get status() {
+    return this.#status;
+  }
+  //#endregion
 
   /**
    * @param {Object} config The MC server process config from `flint-config.json`.
    * @param {boolean} config.autoStart Whether the MC server will automatically start during Flint's launch.
-   * @param {string} config.startScript Path of the MC server startup script relative to the
-   *   current working directory (where Flint was launched)
+   * @param {string} config.startScript Path of the MC server startup script relative to the current
+   *   working directory (where Flint was launched)
    */
   constructor(config) {
     this.#startScript = join(process.cwd(), config.startScript);
@@ -46,12 +59,7 @@ export class MCServer {
     }
 
     // Listen for 'start' command
-    process.stdin.on('data', this.#startCmdListener);
-  }
-
-  /** @returns {MCServerStatus} */
-  get status() {
-    return this.#status;
+    process.stdin.on('data', this.#startCmdListener.bind(this));
   }
 
   /** @throws {CannotStartError} Thrown if the MC server is not in a startable status. */
@@ -62,6 +70,10 @@ export class MCServer {
 
     // Set status
     this.#status = MCServerStatus.STARTING;
+
+    // Detach start command listener
+    process.stdin.removeAllListeners('data');
+    console.log('[FLINT] Minecraft server is starting.');
 
     // Execute script
     this.#process = exec(
@@ -78,30 +90,16 @@ export class MCServer {
       }
     );
 
-    this.#process.stdout.on('data', (data) => {
-      if (/abc/.test(data)) { // TODO: test for presence of 'DONE'
-        this.#status = MCServerStatus.RUNNING;
+    // Listeners
 
-        // TODO: stop receiving 'data' events
-      }
-    }).pipe(process.stdout); // TODO: maybe resume?
+    this.#process.stdout
+      // Attach server startup finished handler
+      .on('data', this.#runningListener.bind(this))
+      // MC output --> Flint output
+      .pipe(process.stdout);
 
-    // MC output --> Flint output
-    this.#process.stdout.pipe(process.stdout);
-
-    // Listen for exit
-    this.#process.on('exit', (code, signal) => {
-      if (code !== null) {
-        console.log(`MC server exited with code: ${code}`);
-        this.#status = code === 0 ? MCServerStatus.STOPPED : MCServerStatus.CRASHED;
-      } else {
-        console.log(`MC server exited with signal: ${signal}`);
-        this.#status = MCServerStatus.CRASHED;
-      }
-
-      // Flint terminal -/-> MC input
-      process.stdin.unpipe(this.#process.stdin).resume();
-    });
+    // Attach exit handler
+    this.#process.once('exit', this.#exitHandler.bind(this));
 
     // Flint terminal --> MC input
     process.stdin.pipe(this.#process.stdin);
@@ -109,9 +107,12 @@ export class MCServer {
 
   /** @throws {CannotStopError} Thrown if the MC server is not in a stoppable status. */
   stop() {
+    // TODO: Implement a STOPPING status that is set when the server begins to stop
     if (!this.#status.canStop) {
       throw new CannotStopError(this.#status);
     }
+
+    console.log('[FLINT] Minecraft server is stopping.');
 
     // Pipe 'stop' to server
     const stopStream = new Readable();
@@ -120,20 +121,50 @@ export class MCServer {
     stopStream.pipe(this.#process.stdin);
   }
 
-  // stdin listeners
-  get #startCmdListener() {
-    const thisArg = this;
-    /**
-     * @param {Buffer} data
-     */
-    return (data) => {
-      if (data.toString().trim() === 'start') {
-        try {
-          thisArg.start();
-        } catch (ignored) {
-          console.error(ignored);
-        }
+  //#region Listeners
+  /** @param {Buffer} data */
+  #startCmdListener(data) {
+    if (data.toString().trim() === 'start') {
+      try {
+        this.start();
+      } catch (ignored) {
+        console.error(ignored);
       }
-    };
+    }
   }
+
+  /** @param {Buffer} data */
+  #runningListener(data) {
+    console.log('[DEBUG] runningListener fired');
+    if (this.#DONE_PATTERN.test(data.toString())) {
+      this.#status = MCServerStatus.RUNNING;
+
+      console.log(this.#process.stdout.isPaused());
+      // Detach self
+      this.#process.stdout.removeAllListeners('data').pipe(process.stdout);
+      console.log(this.#process.stdout.isPaused());
+
+      console.log('[FLINT] Minecraft server is running.');
+    }
+  }
+
+  #exitHandler(code, signal) {
+    if (code !== null) {
+      console.log(`MC server exited with code: ${code}`);
+      this.#status = code === 0 ? MCServerStatus.STOPPED : MCServerStatus.CRASHED;
+    } else {
+      console.log(`MC server exited with signal: ${signal}`);
+      this.#status = MCServerStatus.CRASHED;
+    }
+
+    process.stdin
+      // Flint terminal -/-> MC input
+      .unpipe(this.#process.stdin)
+      // Listen for 'start' command
+      .on('data', this.#startCmdListener.bind(this))
+      .resume();
+
+    console.log('[FLINT] Minecraft server has stopped.');
+  }
+  //#endregion
 }

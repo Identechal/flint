@@ -78,5 +78,5 @@ app.get('/api/server', (req, res) => {
 });
 
 app.listen(config.api.port, () => {
-  console.log('Server is running!');
+  console.log('[FLINT] API is ready!');
 });
