@@ -26,6 +26,8 @@ export class MCServer {
   //#region Constants
   #DONE_PATTERN =
     /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: Done \([^)]+\)! For help, type "help"(?:\n|\r\n)?$/;
+
+  #STOPPING_PATTERN = /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: Stopping the server(?:\n|\r\n)?$/;
   //#endregion
 
   //#region Fields
@@ -99,8 +101,8 @@ export class MCServer {
     // Listeners
 
     this.#process.stdout
-      // Attach server startup finished handler
-      .on('data', this.#runningListener.bind(this))
+      // Attach server output handler
+      .on('data', this.#outputListener.bind(this))
       // MC output --> Flint output
       .pipe(process.stdout);
 
@@ -113,7 +115,6 @@ export class MCServer {
 
   /** @throws {CannotStopError} Thrown if the MC server is not in a stoppable status. */
   stop() {
-    // TODO: Implement a STOPPING status that is set when the server begins to stop
     if (!this.#status.canStop) {
       throw new CannotStopError(this.#status);
     }
@@ -140,26 +141,26 @@ export class MCServer {
   }
 
   /** @param {Buffer} data */
-  #runningListener(data) {
-    console.log('[DEBUG] runningListener fired');
+  #outputListener(data) {
     if (this.#DONE_PATTERN.test(data.toString())) {
-      this.#status = MCServerStatus.RUNNING;
-
-      console.log(this.#process.stdout.isPaused());
-      // Detach self
-      this.#process.stdout.removeAllListeners('data').pipe(process.stdout);
-      console.log(this.#process.stdout.isPaused());
-
       console.log('[FLINT] Minecraft server is running.');
+      this.#status = MCServerStatus.RUNNING;
+    } else if (this.#STOPPING_PATTERN.test(data.toString())) {
+      console.log('[FLINT] Minecraft server is stopping.');
+      this.#status = MCServerStatus.STOPPING;
     }
   }
 
   #exitHandler(code, signal) {
     if (code !== null) {
-      console.log(`MC server exited with code: ${code}`);
-      this.#status = code === 0 ? MCServerStatus.STOPPED : MCServerStatus.CRASHED;
+      if (code === 0) {
+        this.#status = MCServerStatus.STOPPED;
+      } else {
+        console.error(`[FLINT] Minecraft server crashed with exit code ${code}`);
+        this.#status = MCServerStatus.CRASHED;
+      }
     } else {
-      console.log(`MC server exited with signal: ${signal}`);
+      console.error(`[FLINT] Minecraft server exited with signal: ${signal}`);
       this.#status = MCServerStatus.CRASHED;
     }
 
