@@ -25,7 +25,7 @@ import { CannotStartError, CannotStopError } from './MCServerError.js';
 export class MCServer {
   //#region Constants
   #DONE_PATTERN =
-    /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: Done \([^)]+\)! For help, type "help"\n?$/;
+    /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: Done \([^)]+\)! For help, type "help"(?:\n|\r\n)?$/;
   //#endregion
 
   //#region Fields
