@@ -55,11 +55,17 @@ export class MCServer {
     this.#status = MCServerStatus.STOPPED;
 
     if (config.autoStart) {
-      this.start();
+      try {
+        this.start();
+      } catch (error) {
+        console.error(error);
+        // Listen for 'start' command
+        process.stdin.on('data', this.#startCmdListener.bind(this));
+      }
+    } else {
+      // Listen for 'start' command
+      process.stdin.on('data', this.#startCmdListener.bind(this));
     }
-
-    // Listen for 'start' command
-    process.stdin.on('data', this.#startCmdListener.bind(this));
   }
 
   /** @throws {CannotStartError} Thrown if the MC server is not in a startable status. */
@@ -127,8 +133,8 @@ export class MCServer {
     if (data.toString().trim() === 'start') {
       try {
         this.start();
-      } catch (ignored) {
-        console.error(ignored);
+      } catch (error) {
+        console.error(error);
       }
     }
   }
