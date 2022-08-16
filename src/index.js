@@ -77,6 +77,6 @@ app.get('/api/server', (req, res) => {
   res.status(200).json(mcServer.status);
 });
 
-app.listen(config.api.port, () => {
+app.listen(config.api?.port || '25585', () => {
   console.log('[FLINT] API is ready!');
 });
