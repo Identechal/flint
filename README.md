@@ -71,49 +71,61 @@ mc-server/
 ### Properties
 
 | Field            | Type    | Required | Default | Description                                       |
-|------------------|---------|:--------:|---------|---------------------------------------------------|
+| ---------------- | ------- | :------: | ------- | ------------------------------------------------- |
 | `api.port`       | Number  |          | `25585` | Flint API port                                    |
 | `mc.autoStart`   | Boolean |          | `false` | Start the Minecraft server when Flint is launched |
-| `mc.startScript` | String  | x        |         | Relative path to start script                     |
+| `mc.startScript` | String  |    x     |         | Relative path to start script                     |
 
-## API Endpoints
+## Usage
+
+There are two ways to interact with Flint.
+The first is via API endpoints, and the second is through its terminal.
+
+### API Endpoints
 
 Controlling your Minecraft server is as easy as interacting with the following endpoints.
 
-### Start Server
+#### Start Server
 
 `POST` /api/server
 
 **Response:** HTTP 202 if the server will start; otherwise, HTTP 400 if it's already running.
 
-### Stop Server
+#### Stop Server
 
 `DELETE` /api/server
 
 **Response:** HTTP 202 if the server will stop; otherwise, HTTP 400 if it's already stopped.
 
-### Get Server Status
+#### Get Server Status
 
 `GET` /api/server
 
 **Response:**
+
 - **Code:** HTTP 200
 - **Content-Type:** application/json
 - **Body:** [MCServerStatus](#server-statuses)
   ```json
   {
-    "name": "RUNNING", 
+    "name": "RUNNING",
     "canStart": false,
     "canStop": true
   }
   ```
+
+### Terminal Commands
+
+At the moment, Flint does not yet support running Minecraft commands from the API. If you need to do this, please interact directly with Flint's terminal.
+
+To start the server, simply type `start`. From here, terminal input is passed directly to the Minecraft server. That means commands like `stop`, `list`, `op`, etc. will behave as if you were running them directly on the server.
 
 ## Server Statuses
 
 Enumeration of possible Minecraft server statuses.
 
 | name     | canStart | canStop |
-|----------|----------|---------|
+| -------- | -------- | ------- |
 | STARTING | `false`  | `false` |
 | RUNNING  | `false`  | `true`  |
 | STOPPING | `false`  | `false` |
