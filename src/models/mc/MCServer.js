@@ -92,7 +92,7 @@ export class MCServer {
       },
       (error) => {
         if (error) {
-          console.error(error);
+          console.error(`[FLINT] Failed to execute start script. ${error}`);
           this.#status = MCServerStatus.CRASHED;
         }
       }
