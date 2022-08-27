@@ -17,15 +17,13 @@
 
 // Required modules
 import express from 'express';
-import { join } from 'path';
+import { getConfig } from './models/FlintConfig.js';
 
-// Configuration files
-const config = require(join(process.cwd(), 'flint-config.json'));
 import { MCServer } from './models/mc/MCServer.js';
 import { CannotStartError, CannotStopError } from './models/mc/MCServerError.js';
 
-const mcServer = new MCServer(config.mc);
-
+const { api: apiConfig } = getConfig();
+const mcServer = new MCServer();
 const app = express();
 
 // Start
@@ -77,6 +75,6 @@ app.get('/api/server', (req, res) => {
   res.status(200).json(mcServer.status);
 });
 
-app.listen(config.api?.port || '25585', () => {
-  console.log('[FLINT] API is ready!');
+app.listen(apiConfig.port, () => {
+  console.log(`[FLINT] API is ready! Listening on port ${apiConfig.port}.`);
 });

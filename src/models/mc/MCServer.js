@@ -17,10 +17,13 @@
 
 import { exec } from 'child_process';
 import { join, dirname } from 'path';
-import { Readable } from 'stream';
 
 import { MCServerStatus } from './MCServerStatus.js';
 import { CannotStartError, CannotStopError } from './MCServerError.js';
+import { getConfig } from '../FlintConfig.js';
+import { overrideAutosave, runInitializers } from './initializers.js';
+import { JobHandler } from '../jobs/JobHandler.js';
+import { EOL } from 'os';
 
 export class MCServer {
   //#region Constants
@@ -34,6 +37,9 @@ export class MCServer {
   /** @type {String} */
   #startScript;
 
+  /** @type {import('./initializers.js').Initializer[]} */
+  #initializers = [];
+
   /** @type {import('child_process').ChildProcess} */
   #process;
 
@@ -45,18 +51,14 @@ export class MCServer {
   }
   //#endregion
 
-  /**
-   * @param {Object} config The MC server process config from `flint-config.json`.
-   * @param {boolean} config.autoStart Whether the MC server will automatically start during Flint's launch.
-   * @param {string} config.startScript Path of the MC server startup script relative to the current
-   *   working directory (where Flint was launched)
-   */
-  constructor(config) {
-    this.#startScript = join(process.cwd(), config.startScript);
+  constructor() {
+    const { mc } = getConfig();
+
+    this.#startScript = join(process.cwd(), mc.startScript);
     this.#process = null;
     this.#status = MCServerStatus.STOPPED;
 
-    if (config.autoStart) {
+    if (mc.autoStart) {
       try {
         this.start();
       } catch (error) {
@@ -81,7 +83,16 @@ export class MCServer {
 
     // Detach start command listener
     process.stdin.removeAllListeners('data');
-    console.log('[FLINT] Minecraft server is starting.');
+    console.log('[FLINT] Attempting to start Minecraft server.');
+
+    //#region Prepare Initializers
+    const { mc } = getConfig();
+
+    // Autosave
+    if (mc.autosave.enable) {
+      this.#initializers.push(overrideAutosave(mc.autosave.interval));
+    }
+    //#endregion
 
     // Execute script
     this.#process = exec(
@@ -119,13 +130,11 @@ export class MCServer {
       throw new CannotStopError(this.#status);
     }
 
-    console.log('[FLINT] Minecraft server is stopping.');
+    console.log('[FLINT] Attempting to stop Minecraft server.');
 
-    // Pipe 'stop' to server
-    const stopStream = new Readable();
-    stopStream.push('stop');
-    stopStream.push(null);
-    stopStream.pipe(this.#process.stdin);
+    // Write 'stop' to server
+    this.#process.stdin.write('stop');
+    this.#process.stdin.write(EOL);
   }
 
   //#region Listeners
@@ -145,13 +154,24 @@ export class MCServer {
     if (this.#DONE_PATTERN.test(data.toString())) {
       console.log('[FLINT] Minecraft server is running.');
       this.#status = MCServerStatus.RUNNING;
+
+      // Run initializers
+      runInitializers(this.#initializers, this.#process.stdin);
+
+      // Clear initializers
+      this.#initializers = [];
     } else if (this.#STOPPING_PATTERN.test(data.toString())) {
+      // Terminate jobs
+      JobHandler.terminateAll();
       console.log('[FLINT] Minecraft server is stopping.');
       this.#status = MCServerStatus.STOPPING;
     }
   }
 
   #exitHandler(code, signal) {
+    // Terminate jobs
+    JobHandler.terminateAll();
+
     if (code !== null) {
       if (code === 0) {
         this.#status = MCServerStatus.STOPPED;
