@@ -33,6 +33,9 @@ Remote management for self-hosted Minecraft servers.
 Flint is a simple tool enabling you to start or stop your Minecraft server from anywhere.
 It achieves this by wrapping your server in a REST API, exposing basic actions.
 
+In addition to remote control, Flint can be used to autosave your Minecraft server on a custom interval.
+This can be helpful to reduce the frequency of stuttering caused by saving.
+
 ## Installation
 
 By design, Flint is optional and doesn't require you to change anything about your Minecraft server.
@@ -70,11 +73,13 @@ mc-server/
 
 ### Properties
 
-| Field            | Type    | Required | Default | Description                                       |
-| ---------------- | ------- | :------: | ------- | ------------------------------------------------- |
-| `api.port`       | Number  |          | `25585` | Flint API port                                    |
-| `mc.autoStart`   | Boolean |          | `false` | Start the Minecraft server when Flint is launched |
-| `mc.startScript` | String  |    x     |         | Relative path to start script                     |
+| Field                  | Type    | Required | Default | Description                                               |
+| ---------------------- | ------- | :------: | ------- | --------------------------------------------------------- |
+| `api.port`             | Number  |          | `25585` | Flint API port                                            |
+| `mc.autoStart`         | Boolean |          | `false` | Start the Minecraft server when Flint is launched         |
+| `mc.startScript`       | String  |    x     |         | Relative path to start script                             |
+| `mc.autosave.enable`   | Boolean |          | `false` | Override the Minecraft server's default autosave interval |
+| `mc.autosave.interval` | Number  |          | `60`    | Seconds between each autosave                             |
 
 ## Usage
 
