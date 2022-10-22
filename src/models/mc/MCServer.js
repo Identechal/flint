@@ -16,14 +16,15 @@
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
 import { exec } from 'child_process';
+import { EOL } from 'os';
 import { join, dirname } from 'path';
 
 import { MCServerStatus } from './MCServerStatus.js';
 import { CannotStartError, CannotStopError } from './MCServerError.js';
+import { Players } from './Players.js';
 import { getConfig } from '../FlintConfig.js';
 import { overrideAutosave, runInitializers } from './initializers.js';
 import { JobHandler } from '../jobs/JobHandler.js';
-import { EOL } from 'os';
 
 export class MCServer {
   //#region Constants
@@ -135,6 +136,19 @@ export class MCServer {
     // Write 'stop' to server
     this.#process.stdin.write('stop');
     this.#process.stdin.write(EOL);
+  }
+
+  listPlayers() {
+    if (!this.#status === MCServerStatus.RUNNING) {
+      // Server is not running
+      return new Players(0, []);
+    }
+
+    // Write 'list' to server
+    this.#process.stdin.write('list');
+    this.#process.stdin.write(EOL);
+
+    this.#process.stdout.
   }
 
   //#region Listeners

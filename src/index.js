@@ -27,7 +27,7 @@ const mcServer = new MCServer();
 const app = express();
 
 // Start
-app.post('/api/server', (req, res) => {
+app.post('/api/server', (_req, res) => {
   try {
     mcServer.start();
   } catch (error) {
@@ -49,7 +49,7 @@ app.post('/api/server', (req, res) => {
 });
 
 // Stop
-app.delete('/api/server', (req, res) => {
+app.delete('/api/server', (_req, res) => {
   try {
     mcServer.stop();
   } catch (error) {
@@ -71,7 +71,7 @@ app.delete('/api/server', (req, res) => {
 });
 
 // Details
-app.get('/api/server', (req, res) => {
+app.get('/api/server', (_req, res) => {
   res.status(200).json(mcServer.status);
 });
 
