@@ -16,6 +16,7 @@
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
 import { exec } from 'child_process';
+import EventEmitter from 'events';
 import { EOL } from 'os';
 import { join, dirname } from 'path';
 
@@ -52,6 +53,11 @@ export class MCServer {
   }
   //#endregion
 
+  //#region Emitters
+  /** @type {EventEmitter} */
+  #listCmdEmitter;
+  //#endregion
+
   constructor() {
     const { mc } = getConfig();
 
@@ -65,11 +71,11 @@ export class MCServer {
       } catch (error) {
         console.error(error);
         // Listen for 'start' command
-        process.stdin.on('data', this.#startCmdListener.bind(this));
+        process.stdin.on('data', this.#flintStartListener.bind(this));
       }
     } else {
       // Listen for 'start' command
-      process.stdin.on('data', this.#startCmdListener.bind(this));
+      process.stdin.on('data', this.#flintStartListener.bind(this));
     }
   }
 
@@ -139,7 +145,7 @@ export class MCServer {
   }
 
   listPlayers() {
-    if (!this.#status === MCServerStatus.RUNNING) {
+    if (this.#status !== MCServerStatus.RUNNING) {
       // Server is not running
       return new Players(0, []);
     }
@@ -148,12 +154,18 @@ export class MCServer {
     this.#process.stdin.write('list');
     this.#process.stdin.write(EOL);
 
-    this.#process.stdout.
+    // Start a promise that is resolved by an event emitter
+    // The event emitter will be triggered by a listener applied to this.#process.stdout watching for the list command output
+
+    // construct EventEmitter
+    this.#listCmdEmitter.on('parsed', (resolve) => {
+      resolve();
+    });
   }
 
   //#region Listeners
   /** @param {Buffer} data */
-  #startCmdListener(data) {
+  #flintStartListener(data) {
     if (data.toString().trim() === 'start') {
       try {
         this.start();
@@ -202,7 +214,7 @@ export class MCServer {
       // Flint terminal -/-> MC input
       .unpipe(this.#process.stdin)
       // Listen for 'start' command
-      .on('data', this.#startCmdListener.bind(this))
+      .on('data', this.#flintStartListener.bind(this))
       .resume();
 
     console.log('[FLINT] Minecraft server has stopped.');
