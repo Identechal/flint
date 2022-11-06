@@ -32,6 +32,10 @@ export class Players {
   }
   //#endregion
 
+  /**
+   * @param {number} count
+   * @param {string[]} roster
+   */
   constructor(count, roster) {
     this.#count = count;
     this.#roster = roster;

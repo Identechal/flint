@@ -16,7 +16,6 @@
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
 import { exec } from 'child_process';
-import EventEmitter from 'events';
 import { EOL } from 'os';
 import { join, dirname } from 'path';
 
@@ -26,6 +25,7 @@ import { Players } from './Players.js';
 import { getConfig } from '../FlintConfig.js';
 import { overrideAutosave, runInitializers } from './initializers.js';
 import { JobHandler } from '../jobs/JobHandler.js';
+import { ListCommand } from './commands/ListCommand.js';
 
 export class MCServer {
   //#region Constants
@@ -51,11 +51,6 @@ export class MCServer {
   get status() {
     return this.#status;
   }
-  //#endregion
-
-  //#region Emitters
-  /** @type {EventEmitter} */
-  #listCmdEmitter;
   //#endregion
 
   constructor() {
@@ -144,23 +139,21 @@ export class MCServer {
     this.#process.stdin.write(EOL);
   }
 
-  listPlayers() {
+  async listPlayers() {
     if (this.#status !== MCServerStatus.RUNNING) {
       // Server is not running
       return new Players(0, []);
     }
 
-    // Write 'list' to server
-    this.#process.stdin.write('list');
-    this.#process.stdin.write(EOL);
+    // Execute command
+    // TODO: Tidy up promise handling
+    const output = await new ListCommand(this.#process).run();
 
-    // Start a promise that is resolved by an event emitter
-    // The event emitter will be triggered by a listener applied to this.#process.stdout watching for the list command output
+    if (output[1]) {
+      throw new Error('Failed to run command: ' + output[1]);
+    }
 
-    // construct EventEmitter
-    this.#listCmdEmitter.on('parsed', (resolve) => {
-      resolve();
-    });
+    return output[0];
   }
 
   //#region Listeners

@@ -71,8 +71,15 @@ app.delete('/api/server', (_req, res) => {
 });
 
 // Details
-app.get('/api/server', (_req, res) => {
-  res.status(200).json(mcServer.status);
+app.get('/api/server', async (_req, res) => {
+  const list = await mcServer.listPlayers();
+  res.status(200).json({
+    status: mcServer.status,
+    list: {
+      count: list.count,
+      roster: list.roster,
+    },
+  });
 });
 
 app.listen(apiConfig.port, () => {
