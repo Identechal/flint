@@ -75,10 +75,7 @@ app.get('/api/server', async (_req, res) => {
   const list = await mcServer.listPlayers();
   res.status(200).json({
     status: mcServer.status,
-    list: {
-      count: list.count,
-      roster: list.roster,
-    },
+    list: list.toJson(),
   });
 });
 

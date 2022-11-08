@@ -18,26 +18,31 @@
 export class Players {
   //#region Fields
   /** @type {number} */
-  #count;
+  #online;
 
-  get count() {
-    return this.#count;
-  }
+  /** @type {number} */
+  #max;
 
   /** @type {string[]} */
   #roster;
-
-  get roster() {
-    return this.#roster;
-  }
   //#endregion
 
   /**
    * @param {number} count
+   * @param {number} max
    * @param {string[]} roster
    */
-  constructor(count, roster) {
-    this.#count = count;
+  constructor(online, max, roster) {
+    this.#online = online;
+    this.#max = max;
     this.#roster = roster;
+  }
+
+  toJson() {
+    return {
+      online: this.#online,
+      max: this.#max,
+      roster: this.#roster,
+    };
   }
 }

@@ -142,7 +142,7 @@ export class MCServer {
   async listPlayers() {
     if (this.#status !== MCServerStatus.RUNNING) {
       // Server is not running
-      return new Players(0, []);
+      return new Players(0, 0, []);
     }
 
     // Execute command

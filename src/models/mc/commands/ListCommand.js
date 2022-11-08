@@ -22,7 +22,16 @@ import { Players } from '../Players';
 
 export class ListCommand {
   #command = 'list';
-  #outputPattern = /players online/; // TODO: define reliable output pattern
+
+  /**
+   * Groups
+   *
+   * 1. Number of online players
+   * 2. Maximum number of players
+   * 3. (?) Comma-separated player names
+   */
+  #outputPattern =
+    /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: There are (\d+) of a max of (\d+) players online: (.+)?(?:\n|\r\n)?$/;
 
   /** @type {import('child_process').ChildProcess} */
   #server;
@@ -34,7 +43,7 @@ export class ListCommand {
     this.#server = server;
   }
 
-  /** @returns {Promise} */
+  /** @returns {Promise<[Players, string]>} */
   async run() {
     // Create emitter
     this.#emitter = new EventEmitter();
@@ -46,23 +55,30 @@ export class ListCommand {
     return new Promise(this.#executor.bind(this));
   }
 
-  /** @param {string} matchedOutput Raw string output of the command */
+  /** @param {RegExpMatchArray} matchedOutput Raw string output of the command */
   #resolver(matchedOutput) {
-    // TODO: parse matched output and return new Players instance
-    return new Players(1, ['Steve']);
+    return new Players(
+      matchedOutput[1],
+      matchedOutput[2],
+      matchedOutput[3] ? matchedOutput[3].split(',').map((e) => e.trim()) : []
+    );
   }
 
-  /** Bound function that listens for the command output */
-  #listener = /**
-   * @function OutputListener
+  // TODO: Cleanup docs
+  /**
+   * @callback OutputListener
    * @param {Buffer} data
-   */ ((data) => {
-    const output = data.toString();
-    if (this.#outputPattern.test(output)) {
-      console.log(`[FLINT] List command output parsed! It was "${output}"`);
-      this.#emitter.emit('parsed', this.#resolver(output));
+   */
+
+  /** Bound function that listens for the command output */
+  #listener = /** @type {OutputListener} */ (
+    (data) => {
+      const output = data.toString().match(this.#outputPattern);
+      if (output != null) {
+        this.#emitter.emit('parsed', this.#resolver(output));
+      }
     }
-  }).bind(this);
+  ).bind(this);
 
   #executor(resolve, reject) {
     // Reject promise if taking too long
