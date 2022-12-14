@@ -72,7 +72,16 @@ app.delete('/api/server', (_req, res) => {
 
 // Details
 app.get('/api/server', async (_req, res) => {
-  const list = await mcServer.listPlayers();
+  let list;
+  try {
+    list = await mcServer.listPlayers();
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+    });
+    return;
+  }
+
   res.status(200).json({
     status: mcServer.status,
     list: list.toJson(),

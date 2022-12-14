@@ -21,11 +21,11 @@ import { join, dirname } from 'path';
 
 import { MCServerStatus } from './MCServerStatus.js';
 import { CannotStartError, CannotStopError } from './MCServerError.js';
-import { Players } from './Players.js';
+import { Players } from './commands/list/Players.js';
 import { getConfig } from '../FlintConfig.js';
 import { overrideAutosave, runInitializers } from './initializers.js';
 import { JobHandler } from '../jobs/JobHandler.js';
-import { ListCommand } from './commands/ListCommand.js';
+import { ListCommand } from './commands/list/ListCommand.js';
 
 export class MCServer {
   //#region Constants
@@ -139,6 +139,11 @@ export class MCServer {
     this.#process.stdin.write(EOL);
   }
 
+  //#region Commands
+  /**
+   * @returns {Promise<Players>}
+   * @throws {Error} Thrown if the command resolves to an error
+   */
   async listPlayers() {
     if (this.#status !== MCServerStatus.RUNNING) {
       // Server is not running
@@ -146,15 +151,16 @@ export class MCServer {
     }
 
     // Execute command
-    // TODO: Tidy up promise handling
     const output = await new ListCommand(this.#process).run();
 
     if (output[1]) {
+      // FIXME: Find out why this never evaluates to true
       throw new Error('Failed to run command: ' + output[1]);
     }
 
     return output[0];
   }
+  //#endregion
 
   //#region Listeners
   /** @param {Buffer} data */
@@ -187,6 +193,10 @@ export class MCServer {
     }
   }
 
+  /**
+   * @param {number} code
+   * @param {NodeJS.Signals} signal
+   */
   #exitHandler(code, signal) {
     // Terminate jobs
     JobHandler.terminateAll();
@@ -195,7 +205,7 @@ export class MCServer {
       if (code === 0) {
         this.#status = MCServerStatus.STOPPED;
       } else {
-        console.error(`[FLINT] Minecraft server crashed with exit code ${code}`);
+        console.error(`[FLINT] Minecraft server crashed with exit code: ${code}`);
         this.#status = MCServerStatus.CRASHED;
       }
     } else {
