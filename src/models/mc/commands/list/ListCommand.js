@@ -31,6 +31,15 @@ export class ListCommand extends Command {
   outputPattern =
     /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: There are (\d+) of a max of (\d+) players online: (.+)?(?:\n|\r\n)?$/;
 
+  /** @returns {Promise<Players>} */
+  run() {
+    return super.run();
+  }
+
+  /**
+   * @override
+   * @inheritdoc
+   */
   resolver(matchedOutput) {
     return new Players(
       matchedOutput[1],

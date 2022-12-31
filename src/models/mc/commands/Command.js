@@ -18,6 +18,7 @@
 import EventEmitter from 'events';
 import { setTimeout } from 'timers';
 import { EOL } from 'os';
+import { CommandTimeoutError } from './errors';
 
 /** @abstract */
 export class Command {
@@ -60,7 +61,6 @@ export class Command {
     throw new Error('This method must be overridden.');
   }
 
-  /** @returns {Promise<[any, ?string]>} */
   async run() {
     // Create emitter
     this.#emitter = new EventEmitter();
@@ -97,17 +97,16 @@ export class Command {
   #executor(resolve, reject) {
     // Reject promise if taking too long
     const timeout = setTimeout(() => {
-      reject([null, 'Command timed out']);
+      const error = new CommandTimeoutError(this.command);
+      reject(error);
       this.#server.stdout.removeListener('data', this.#listener);
-      console.warn(
-        `[FLINT] Command timed out: '${this.command}' took more than 2 seconds to resolve.`
-      );
+      console.warn(`[FLINT] ${error.message}`);
     }, 2000);
 
     // Resolve promise once the output has been parsed
     this.#emitter.once('parsed', (payload) => {
       clearTimeout(timeout);
-      resolve([payload, null]);
+      resolve(payload);
       this.#server.stdout.removeListener('data', this.#listener);
     });
 

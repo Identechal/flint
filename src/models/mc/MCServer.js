@@ -20,7 +20,7 @@ import { EOL } from 'os';
 import { join, dirname } from 'path';
 
 import { MCServerStatus } from './MCServerStatus.js';
-import { CannotStartError, CannotStopError } from './MCServerError.js';
+import { CannotStartError, CannotStopError } from './errors.js';
 import { Players } from './commands/list/Players.js';
 import { getConfig } from '../FlintConfig.js';
 import { overrideAutosave, runInitializers } from './initializers.js';
@@ -151,14 +151,7 @@ export class MCServer {
     }
 
     // Execute command
-    const output = await new ListCommand(this.#process).run();
-
-    if (output[1]) {
-      // FIXME: Find out why this never evaluates to true
-      throw new Error('Failed to run command: ' + output[1]);
-    }
-
-    return output[0];
+    return await new ListCommand(this.#process).run();
   }
   //#endregion
 
