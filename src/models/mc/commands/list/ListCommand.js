@@ -42,8 +42,8 @@ export class ListCommand extends Command {
    */
   resolver(matchedOutput) {
     return new Players(
-      matchedOutput[1],
-      matchedOutput[2],
+      parseInt(matchedOutput[1]),
+      parseInt(matchedOutput[2]),
       matchedOutput[3] ? matchedOutput[3].split(',').map((e) => e.trim()) : []
     );
   }
