@@ -28,7 +28,7 @@ export class Players {
   //#endregion
 
   /**
-   * @param {number} count
+   * @param {number} online
    * @param {number} max
    * @param {string[]} roster
    */
