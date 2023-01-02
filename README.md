@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2022 Identechal LLC
+ Copyright (C) 2023 Identechal LLC
 
  This file is part of Flint.
 
@@ -57,7 +57,7 @@ Setup is as simple as dropping Flint in your server directory and pointing it at
 
 ## Configuration
 
-Flint's behavior is controlled by a simple configuration file, called `flint-config.json`.
+Flint's behavior is controlled by a simple configuration file, named `flint-config.json`.
 This file should be placed in the same directory as Flint.
 
 Example directory structure:
@@ -102,7 +102,7 @@ Controlling your Minecraft server is as easy as interacting with the following e
 
 **Response:** HTTP 202 if the server will stop; otherwise, HTTP 400 if it's already stopped.
 
-#### Get Server Status
+#### Get Server Details
 
 `GET` /api/server
 
@@ -110,29 +110,112 @@ Controlling your Minecraft server is as easy as interacting with the following e
 
 - **Code:** HTTP 200
 - **Content-Type:** application/json
-- **Body:** [MCServerStatus](#server-statuses)
-  ```json
-  {
-    "name": "RUNNING",
-    "canStart": false,
-    "canStop": true
-  }
-  ```
+- **Body:** [ServerDetails](#serverdetails)
 
 ### Terminal Commands
 
-At the moment, Flint does not yet support running Minecraft commands from the API. If you need to do this, please interact directly with Flint's terminal.
+At the moment, Flint does not yet support running specific Minecraft commands from the API. If you need to do this, please interact directly with Flint's terminal.
 
 To start the server, simply type `start`. From here, terminal input is passed directly to the Minecraft server. That means commands like `stop`, `list`, `op`, etc. will behave as if you were running them directly on the server.
 
-## Server Statuses
+## API Reference
 
-Enumeration of possible Minecraft server statuses.
+### ServerDetails
+
+General information about the server's current state.
+
+#### Properties
+
+##### `status` ([MCServerStatus](#mcserverstatus))
+
+Status of the server.
+
+##### `list` ([Players](#players))
+
+Player count and roster.
+
+#### Examples
+
+Minecraft server is offline:
+
+```json
+{
+  "status": {
+    "name": "STOPPED",
+    "canStart": true,
+    "canStop": false
+  },
+  "list": {
+    "online": 0,
+    "max": 0,
+    "roster": []
+  }
+}
+```
+
+Minecraft server is running and two players are connected:
+
+```json
+{
+  "status": {
+    "name": "RUNNING",
+    "canStart": false,
+    "canStop": true
+  },
+  "list": {
+    "online": 2,
+    "max": 10,
+    "roster": ["Steve", "Alex"]
+  }
+}
+```
+
+### MCServerStatus
+
+Enumeration of Minecraft server statuses.
+
+#### Properties
+
+##### `canStart` (boolean)
+
+Whether the Minecraft server can be started.
+
+##### `canStop` (boolean)
+
+Whether the Minecraft server can be stopped.
+
+#### Enumerations
 
 | name     | canStart | canStop |
 | -------- | -------- | ------- |
-| STARTING | `false`  | `false` |
-| RUNNING  | `false`  | `true`  |
-| STOPPING | `false`  | `false` |
-| STOPPED  | `true`   | `false` |
 | CRASHED  | `true`   | `false` |
+| RUNNING  | `false`  | `true`  |
+| STARTING | `false`  | `false` |
+| STOPPED  | `true`   | `false` |
+| STOPPING | `false`  | `false` |
+
+### Players
+
+#### Properties
+
+##### `online` (number)
+
+Amount of connected players.
+
+##### `max` (number)
+
+Maximum amount of players.
+
+##### `roster` (string[])
+
+List of connected players' names.
+
+#### Examples
+
+```json
+{
+  "online": 4,
+  "max": 20,
+  "roster": ["Steve", "Alex", "Herobrine", "Notch"]
+}
+```

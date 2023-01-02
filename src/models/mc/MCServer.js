@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Identechal LLC
+// Copyright (C) 2023 Identechal LLC
 //
 // This file is part of Flint.
 //
@@ -16,14 +16,16 @@
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
 import { exec } from 'child_process';
+import { EOL } from 'os';
 import { join, dirname } from 'path';
 
 import { MCServerStatus } from './MCServerStatus.js';
-import { CannotStartError, CannotStopError } from './MCServerError.js';
+import { CannotStartError, CannotStopError } from './errors.js';
+import { Players } from './commands/list/Players.js';
 import { getConfig } from '../FlintConfig.js';
 import { overrideAutosave, runInitializers } from './initializers.js';
 import { JobHandler } from '../jobs/JobHandler.js';
-import { EOL } from 'os';
+import { ListCommand } from './commands/list/ListCommand.js';
 
 export class MCServer {
   //#region Constants
@@ -64,11 +66,11 @@ export class MCServer {
       } catch (error) {
         console.error(error);
         // Listen for 'start' command
-        process.stdin.on('data', this.#startCmdListener.bind(this));
+        process.stdin.on('data', this.#flintStartListener.bind(this));
       }
     } else {
       // Listen for 'start' command
-      process.stdin.on('data', this.#startCmdListener.bind(this));
+      process.stdin.on('data', this.#flintStartListener.bind(this));
     }
   }
 
@@ -137,9 +139,25 @@ export class MCServer {
     this.#process.stdin.write(EOL);
   }
 
+  //#region Commands
+  /**
+   * @returns {Promise<Players>}
+   * @throws {Error} Thrown if the command resolves to an error
+   */
+  async listPlayers() {
+    if (this.#status !== MCServerStatus.RUNNING) {
+      // Server is not running
+      return new Players(0, 0, []);
+    }
+
+    // Execute command
+    return await new ListCommand(this.#process).run();
+  }
+  //#endregion
+
   //#region Listeners
   /** @param {Buffer} data */
-  #startCmdListener(data) {
+  #flintStartListener(data) {
     if (data.toString().trim() === 'start') {
       try {
         this.start();
@@ -168,6 +186,10 @@ export class MCServer {
     }
   }
 
+  /**
+   * @param {number} code
+   * @param {NodeJS.Signals} signal
+   */
   #exitHandler(code, signal) {
     // Terminate jobs
     JobHandler.terminateAll();
@@ -176,7 +198,7 @@ export class MCServer {
       if (code === 0) {
         this.#status = MCServerStatus.STOPPED;
       } else {
-        console.error(`[FLINT] Minecraft server crashed with exit code ${code}`);
+        console.error(`[FLINT] Minecraft server crashed with exit code: ${code}`);
         this.#status = MCServerStatus.CRASHED;
       }
     } else {
@@ -188,7 +210,7 @@ export class MCServer {
       // Flint terminal -/-> MC input
       .unpipe(this.#process.stdin)
       // Listen for 'start' command
-      .on('data', this.#startCmdListener.bind(this))
+      .on('data', this.#flintStartListener.bind(this))
       .resume();
 
     console.log('[FLINT] Minecraft server has stopped.');

@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Identechal LLC
+// Copyright (C) 2023 Identechal LLC
 //
 // This file is part of Flint.
 //
@@ -20,14 +20,15 @@ import express from 'express';
 import { getConfig } from './models/FlintConfig.js';
 
 import { MCServer } from './models/mc/MCServer.js';
-import { CannotStartError, CannotStopError } from './models/mc/MCServerError.js';
+import { CannotStartError, CannotStopError } from './models/mc/errors.js';
+import { CommandTimeoutError } from './models/mc/commands/errors.js';
 
 const { api: apiConfig } = getConfig();
 const mcServer = new MCServer();
 const app = express();
 
 // Start
-app.post('/api/server', (req, res) => {
+app.post('/api/server', (_req, res) => {
   try {
     mcServer.start();
   } catch (error) {
@@ -49,7 +50,7 @@ app.post('/api/server', (req, res) => {
 });
 
 // Stop
-app.delete('/api/server', (req, res) => {
+app.delete('/api/server', (_req, res) => {
   try {
     mcServer.stop();
   } catch (error) {
@@ -71,8 +72,29 @@ app.delete('/api/server', (req, res) => {
 });
 
 // Details
-app.get('/api/server', (req, res) => {
-  res.status(200).json(mcServer.status);
+app.get('/api/server', async (_req, res) => {
+  let list;
+  try {
+    list = await mcServer.listPlayers();
+  } catch (error) {
+    // TODO: make real error body
+    if (error instanceof CommandTimeoutError) {
+      res.status(408).json({
+        error: error.message,
+      });
+    } else {
+      res.status(500).json({
+        error: error.message,
+      });
+    }
+
+    return;
+  }
+
+  res.status(200).json({
+    status: mcServer.status,
+    list: list.toJson(),
+  });
 });
 
 app.listen(apiConfig.port, () => {
