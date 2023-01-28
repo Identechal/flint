@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
-import { MCServerStatus } from './MCServerStatus.js';
+import { MCServerStatus } from './MCServerStatus';
 
 export class CannotStartError extends Error {
   /** @param {MCServerStatus} status */

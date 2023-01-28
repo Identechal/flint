@@ -17,11 +17,11 @@
 
 // Required modules
 import express from 'express';
-import { getConfig } from './models/FlintConfig.js';
+import { getConfig } from './models/config/FlintConfig';
 
-import { MCServer } from './models/mc/MCServer.js';
-import { CannotStartError, CannotStopError } from './models/mc/errors.js';
-import { CommandTimeoutError } from './models/mc/commands/errors.js';
+import { MCServer } from './models/mc/MCServer';
+import { CannotStartError, CannotStopError } from './models/mc/errors';
+import { CommandTimeoutError } from './models/mc/commands/errors';
 
 const { api: apiConfig } = getConfig();
 const mcServer = new MCServer();

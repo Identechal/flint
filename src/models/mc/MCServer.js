@@ -19,13 +19,13 @@ import { exec } from 'child_process';
 import { EOL } from 'os';
 import { join, dirname } from 'path';
 
-import { MCServerStatus } from './MCServerStatus.js';
-import { CannotStartError, CannotStopError } from './errors.js';
-import { Players } from './commands/list/Players.js';
-import { getConfig } from '../FlintConfig.js';
-import { overrideAutosave, runInitializers } from './initializers.js';
-import { JobHandler } from '../jobs/JobHandler.js';
-import { ListCommand } from './commands/list/ListCommand.js';
+import { MCServerStatus } from './MCServerStatus';
+import { CannotStartError, CannotStopError } from './errors';
+import { Players } from './commands/list/Players';
+import { getConfig } from '../config/FlintConfig';
+import { overrideAutosave, runInitializers } from './initializers';
+import { JobHandler } from '../jobs/JobHandler';
+import { ListCommand } from './commands/list/ListCommand';
 
 export class MCServer {
   //#region Constants
@@ -39,7 +39,7 @@ export class MCServer {
   /** @type {String} */
   #startScript;
 
-  /** @type {import('./initializers.js').Initializer[]} */
+  /** @type {import('./initializers').Initializer[]} */
   #initializers = [];
 
   /** @type {import('child_process').ChildProcess} */
