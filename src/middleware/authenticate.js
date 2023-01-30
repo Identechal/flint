@@ -15,17 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
+import { AuthMethod } from '../models/config/api/auth/AuthMethod';
 import { getConfig } from '../models/config/FlintConfig';
+import { NextFunction, Request, Response } from 'express';
 
 /** @returns {boolean} Whether authentication is enabled for the Flint API. */
 export function isAuthEnabled() {
   const { auth: authConfig } = getConfig().api;
 
-  return Object.values(authConfig).some(
-    (/** @type {import('../models/config/api/auth/AuthMethod').AuthMethod} */ authMethod) => {
-      return authMethod.enable;
-    }
-  );
+  return Object.values(authConfig).some((/** @type {AuthMethod} */ authMethod) => {
+    return authMethod.enable;
+  });
 }
 
 /** @returns {middleware} Authentication middleware */
@@ -92,13 +92,13 @@ function buildApiKeyAuthenticator(keys) {
 
 /**
  * @callback authenticator
- * @param {import('express').Request} req
+ * @param {Request} req
  * @returns {AuthResult}
  */
 
 /**
  * @callback middleware
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @param {import('express').NextFunction} next
+ * @param {Request} req
+ * @param {Response} res
+ * @param {NextFunction} next
  */

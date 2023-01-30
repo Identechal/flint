@@ -19,10 +19,11 @@ import { setInterval } from 'timers';
 import { JobHandler } from '../jobs/JobHandler';
 import { JobName } from '../jobs/JobName';
 import { EOL } from 'os';
+import { Writable } from 'stream';
 
 /**
  * @param {Initializer[]} initializers
- * @param {import('node:stream').Writable} targetStream The MC server process's input stream.
+ * @param {Writable} targetStream The MC server process's input stream.
  */
 export function runInitializers(initializers, targetStream) {
   console.log(`[FLINT] Running ${initializers.length} initializers`);
@@ -35,7 +36,7 @@ export function runInitializers(initializers, targetStream) {
  * Code to execute when the MC server has finished starting.
  *
  * @callback Initializer
- * @param {import('node:stream').Writable} targetStream The MC server process's input stream.
+ * @param {Writable} targetStream The MC server process's input stream.
  * @returns {void}
  */
 
