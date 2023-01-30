@@ -15,30 +15,35 @@
 // You should have received a copy of the GNU General Public License
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
-export class APIKey {
-  //#region Fields
-  /**
-   * Whether API tokens may be used to authenticate requests.
-   *
-   * @type {boolean}
-   */
-  enable = false;
+import { AuthMethod } from './AuthMethod';
 
+export class APIKey extends AuthMethod {
+  //#region Fields
   /**
    * Keys that may be used to authenticate requests.
    *
-   * @type {string[]}
+   * @type {Set<string>}
    */
-  keys = [];
+  keys = new Set();
   //#endregion
 
   constructor(apiKeyJson) {
+    super();
+
     if (apiKeyJson?.enable === true) {
       this.enable = true;
     }
 
     if (apiKeyJson?.keys) {
-      this.keys = apiKeyJson.keys;
+      this.keys = new Set(apiKeyJson.keys);
     }
+
+    //#region Validation
+    if (this.enable && this.keys.size === 0) {
+      throw new Error(
+        'api.auth.apiKey.keys must contain at least one key if API key authentication is enabled.'
+      );
+    }
+    //#endregion
   }
 }

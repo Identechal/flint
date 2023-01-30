@@ -15,19 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
-import { APIKey } from './APIKey';
-
-export class Auth {
-  //#region Fields
+/** @abstract */
+export class AuthMethod {
   /**
-   * API key configuration.
+   * Whether this auth method may be used to authenticate requests.
    *
-   * @type {APIKey}
+   * @type {boolean}
    */
-  apiKey;
-  //#endregion
-
-  constructor(authJson) {
-    this.apiKey = new APIKey(authJson?.apiKey);
-  }
+  enable = false;
 }

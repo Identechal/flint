@@ -30,7 +30,7 @@ export class FlintConfig {
 
   static get config() {
     if (!this.#config) {
-      this.#config = new FlintConfig(import(join(process.cwd(), 'flint-config.json')));
+      this.#config = new FlintConfig(require(join(process.cwd(), 'flint-config.json')));
     }
 
     return this.#config;

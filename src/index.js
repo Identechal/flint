@@ -22,10 +22,17 @@ import { getConfig } from './models/config/FlintConfig';
 import { MCServer } from './models/mc/MCServer';
 import { CannotStartError, CannotStopError } from './models/mc/errors';
 import { CommandTimeoutError } from './models/mc/commands/errors';
+import { authenticate, isAuthEnabled } from './middleware/authenticate';
 
 const { api: apiConfig } = getConfig();
 const mcServer = new MCServer();
 const app = express();
+
+//#region Middleware
+if (isAuthEnabled()) {
+  app.use(authenticate());
+}
+//#endregion
 
 // Start
 app.post('/api/server', (_req, res) => {
