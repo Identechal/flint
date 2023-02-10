@@ -16,6 +16,7 @@
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
 import { APIKey } from './APIKey';
+import { PublicKey } from './public-key/PublicKey';
 
 export class Auth {
   //#region Fields
@@ -25,9 +26,17 @@ export class Auth {
    * @type {APIKey}
    */
   apiKey;
+
+  /**
+   * Public key authentication configuration.
+   *
+   * @type {PublicKey}
+   */
+  publicKey;
   //#endregion
 
   constructor(authJson) {
     this.apiKey = new APIKey(authJson?.apiKey);
+    this.publicKey = new PublicKey(authJson?.publicKey);
   }
 }
