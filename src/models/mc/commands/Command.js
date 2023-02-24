@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChildProcess } from 'child_process';
 import EventEmitter from 'events';
 import { setTimeout } from 'timers';
 import { EOL } from 'os';
@@ -33,7 +32,7 @@ export class Command {
   /** @type {RegExp} */
   outputPattern;
 
-  /** @typedef {ChildProcess} ChildProcess */
+  /** @typedef {import('child_process').ChildProcess} ChildProcess */
 
   /**
    * Child process of the MC server

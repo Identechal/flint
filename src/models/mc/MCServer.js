@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
-import { ChildProcess, exec } from 'child_process';
+import { exec } from 'child_process';
 import { EOL } from 'os';
 import { join, dirname } from 'path';
 
@@ -23,7 +23,7 @@ import { MCServerStatus } from './MCServerStatus';
 import { CannotStartError, CannotStopError } from './errors';
 import { Players } from './commands/list/Players';
 import { getConfig } from '../config/FlintConfig';
-import { overrideAutosave, runInitializers, Initializer } from './initializers';
+import { overrideAutosave, runInitializers } from './initializers';
 import { JobHandler } from '../jobs/JobHandler';
 import { ListCommand } from './commands/list/ListCommand';
 
@@ -39,10 +39,10 @@ export class MCServer {
   /** @type {String} */
   #startScript;
 
-  /** @type {Initializer[]} */
+  /** @type {import('./initializers').Initializer[]} */
   #initializers = [];
 
-  /** @type {ChildProcess} */
+  /** @type {import('child_process').ChildProcess} */
   #process;
 
   /** @type {MCServerStatus} */
