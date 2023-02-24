@@ -23,11 +23,4 @@ export class AuthMethod {
    * @type {boolean}
    */
   enable = false;
-
-  constructor(enable) {
-    // Compare to primitive (truthy doesn't count, needs to be literally true)
-    if (enable === true) {
-      this.enable = true;
-    }
-  }
 }

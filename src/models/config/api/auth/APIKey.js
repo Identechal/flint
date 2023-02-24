@@ -28,7 +28,11 @@ export class APIKey extends AuthMethod {
   //#endregion
 
   constructor(apiKeyJson) {
-    super(apiKeyJson?.enable);
+    super();
+
+    if (apiKeyJson?.enable === true) {
+      this.enable = true;
+    }
 
     if (apiKeyJson?.keys) {
       this.keys = new Set(apiKeyJson.keys);
