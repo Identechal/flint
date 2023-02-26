@@ -29,7 +29,7 @@ export class ListCommand extends Command {
    * 3. (?) Comma-separated player names
    */
   outputPattern =
-    /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: There are (\d+) of a max of (\d+) players online: (.+)?(?:\n|\r\n)?$/;
+    /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: There are (\d+) of a max of (\d+) players online: (.+)?(?:\n|(?:\r\n))?$/;
 
   /** @returns {Promise<Players>} */
   run() {

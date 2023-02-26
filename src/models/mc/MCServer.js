@@ -30,9 +30,10 @@ import { ListCommand } from './commands/list/ListCommand';
 export class MCServer {
   //#region Constants
   #DONE_PATTERN =
-    /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: Done \([^)]+\)! For help, type "help"(?:\n|\r\n)?$/;
+    /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: Done \([^)]+\)! For help, type "help"(?:\n|(?:\r\n))?$/;
 
-  #STOPPING_PATTERN = /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: Stopping the server(?:\n|\r\n)?$/;
+  #STOPPING_PATTERN =
+    /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: Stopping the server(?:\n|(?:\r\n))??$/;
   //#endregion
 
   //#region Fields
