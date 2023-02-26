@@ -15,9 +15,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
-import { AuthMethod } from '../models/config/api/auth/AuthMethod';
 import { getConfig } from '../models/config/FlintConfig';
-import { NextFunction, Request, Response } from 'express';
+/**
+ * @typedef {import('express').Request} Request
+ *
+ * @typedef {import('express').Response} Response
+ *
+ * @typedef {import('express').NextFunction} NextFunction
+ *
+ * @typedef {import('../models/config/api/auth/AuthMethod').AuthMethod} AuthMethod
+ */
 
 /** @returns {boolean} Whether authentication is enabled for the Flint API. */
 export function isAuthEnabled() {
@@ -46,8 +53,8 @@ export function authenticate() {
       const authResult = useAuthenticator(req);
 
       // Check if authentication method was used
-      if (authResult[0]) {
-        if (authResult[1]) {
+      if (authResult.used) {
+        if (authResult.authenticated) {
           // Successfully authenticated
           next();
           return;
@@ -74,20 +81,18 @@ function buildApiKeyAuthenticator(keys) {
 
     // Check if authentication method was used
     if (!key) {
-      return [false, false];
+      return { used: false, authenticated: false };
     }
 
     // Test the API key
-    return [true, keys.has(key)];
+    return { used: true, authenticated: keys.has(key) };
   };
 }
 
 /**
- * @typedef {boolean} Used Whether the request used this authentication method.
- *
- * @typedef {boolean} Authenticated Whether the request successfully authenticated.
- *
- * @typedef {[Used, Authenticated]} AuthResult Result of the {@link authenticator}'s check.
+ * @typedef {Object} AuthResult Result of the {@link authenticator}'s check.
+ * @property {boolean} used Whether the request used this authentication method.
+ * @property {boolean} authenticated Whether the request successfully authenticated.
  */
 
 /**

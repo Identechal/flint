@@ -16,13 +16,14 @@
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
 import { setInterval } from 'timers';
+import { EOL } from 'os';
 import { JobHandler } from '../jobs/JobHandler';
 import { JobName } from '../jobs/JobName';
-import { EOL } from 'os';
+/** @typedef {import('stream').Writable} Writable */
 
 /**
- * @param {Initializer[]} initializers
- * @param {import('stream').Writable} targetStream The MC server process's input stream.
+ * @param {initializer[]} initializers
+ * @param {Writable} targetStream The MC server process's input stream.
  */
 export function runInitializers(initializers, targetStream) {
   console.log(`[FLINT] Running ${initializers.length} initializers`);
@@ -34,8 +35,8 @@ export function runInitializers(initializers, targetStream) {
 /**
  * Code to execute when the MC server has finished starting.
  *
- * @callback Initializer
- * @param {import('stream').Writable} targetStream The MC server process's input stream.
+ * @callback initializer
+ * @param {Writable} targetStream The MC server process's input stream.
  * @returns {void}
  */
 
@@ -43,7 +44,7 @@ export function runInitializers(initializers, targetStream) {
  * Builds an initializer that overrides Minecraft's default autosave functionality.
  *
  * @param {number} saveInterval The interval, in seconds, between saving the world.
- * @returns {Initializer}
+ * @returns {initializer}
  */
 export function overrideAutosave(saveInterval) {
   return (targetStream) => {
