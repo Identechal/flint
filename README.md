@@ -73,13 +73,28 @@ mc-server/
 
 ### Properties
 
-| Field                  | Type    | Required | Default | Description                                               |
-| ---------------------- | ------- | :------: | ------- | --------------------------------------------------------- |
-| `api.port`             | Number  |          | `25585` | Flint API port                                            |
-| `mc.autoStart`         | Boolean |          | `false` | Start the Minecraft server when Flint is launched         |
-| `mc.startScript`       | String  |    x     |         | Relative path to start script                             |
-| `mc.autosave.enable`   | Boolean |          | `false` | Override the Minecraft server's default autosave interval |
-| `mc.autosave.interval` | Number  |          | `60`    | Seconds between each autosave                             |
+| Field                    | Type     | Required | Default | Description                                               |
+| ------------------------ | -------- | :------: | ------- | --------------------------------------------------------- |
+| `api.port`               | Number   |          | `25585` | Flint API port                                            |
+| `mc.autoStart`           | Boolean  |          | `false` | Start the Minecraft server when Flint is launched         |
+| `mc.startScript`         | String   |    x     |         | Relative path to start script                             |
+| `mc.autosave.enable`     | Boolean  |          | `false` | Override the Minecraft server's default autosave interval |
+| `mc.autosave.interval`   | Number   |          | `60`    | Seconds between each autosave                             |
+| `api.auth.apiKey.enable` | Boolean  |          | `false` | Restrict API usage to only valid API keys                 |
+| `api.auth.apiKey.keys`   | String[] |          | `[]`    | Keys that may be used to authenticate requests            |
+
+### Auth
+
+Flint currently supports API Key authorization. This may be used to restrict access to only people who know a valid key.
+Please note that this method on its own should not be considered secure ([Security of API keys](https://cloud.google.com/endpoints/docs/openapi/when-why-api-key#security_of_api_keys)).
+
+To send authorized reqeusts, include the following header:
+
+```http
+X-API-Key: <Your API key>
+```
+
+If you would like for us to add support for more auth methods, please [create an issue](https://github.com/Identechal/flint/issues/new).
 
 ## Usage
 
