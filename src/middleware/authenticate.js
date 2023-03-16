@@ -30,9 +30,9 @@ import { getConfig } from '../models/config/FlintConfig';
 export function isAuthEnabled() {
   const { auth: authConfig } = getConfig().api;
 
-  return Object.values(authConfig).some((/** @type {AuthMethod} */ authMethod) => {
-    return authMethod.enable;
-  });
+  return Object.values(authConfig).some(
+    (/** @type {AuthMethod} */ authMethod) => authMethod.enable
+  );
 }
 
 /** @returns {middleware} Authentication middleware */
