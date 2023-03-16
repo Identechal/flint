@@ -19,6 +19,7 @@ import EventEmitter from 'events';
 import { setTimeout } from 'timers';
 import { EOL } from 'os';
 import { CommandTimeoutError } from './errors';
+/** @typedef {import('child_process').ChildProcess} ChildProcess */
 
 /** @abstract */
 export class Command {
@@ -32,10 +33,8 @@ export class Command {
   /** @type {RegExp} */
   outputPattern;
 
-  /** @typedef {import('child_process').ChildProcess} ChildProcess */
-
   /**
-   * Child process of the MC server
+   * Child process of the Minecraft server
    *
    * @type {ChildProcess}
    */
@@ -57,7 +56,7 @@ export class Command {
    * @abstract
    * @param {RegExpMatchArray} matchedOutput Raw string output of the command
    */
-  resolver(matchedOutput) {
+  resolver() {
     throw new Error('This method must be overridden.');
   }
 

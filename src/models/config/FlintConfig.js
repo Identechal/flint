@@ -16,6 +16,8 @@
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
 import { join } from 'path';
+import { API } from './api/API';
+import { MC } from './mc/MC';
 
 export function getConfig() {
   return FlintConfig.config;
@@ -61,88 +63,5 @@ export class FlintConfig {
 
     this.api = new API(json.api);
     this.mc = new MC(json.mc);
-  }
-}
-
-export class API {
-  //#region Fields
-  /**
-   * Port which the Flint API listens to.
-   *
-   * @type {number}
-   */
-  port = 25585;
-  //#endregion
-
-  constructor(apiJson) {
-    if (apiJson?.port) {
-      this.port = apiJson.port;
-    }
-  }
-}
-
-export class MC {
-  //#region Fields
-  /**
-   * Whether the MC server will automatically start during Flint's launch.
-   *
-   * @type {boolean}
-   */
-  autoStart = false;
-
-  /**
-   * Path of the MC server startup script relative to the current working directory (where Flint was
-   * launched).
-   *
-   * @type {string}
-   */
-  startScript;
-
-  /**
-   * Autosave configuration.
-   *
-   * @type {Autosave}
-   */
-  autosave;
-  //#endregion
-
-  constructor(mcJson) {
-    if (mcJson?.autoStart === true) {
-      this.autoStart = true;
-    }
-
-    if (mcJson?.startScript) {
-      this.startScript = mcJson.startScript;
-    } else {
-      throw new Error('mc.startScript is a required configuration property.');
-    }
-
-    this.autosave = new Autosave(mcJson?.autosave);
-  }
-}
-
-class Autosave {
-  /**
-   * The interval, in seconds, between saving the world.
-   *
-   * @type {number}
-   */
-  interval = 60;
-
-  /**
-   * Whether Flint will override the default autosave functionality of the MC server.
-   *
-   * @type {boolean}
-   */
-  enable = false;
-
-  constructor(autosaveJson) {
-    if (autosaveJson?.interval) {
-      this.interval = autosaveJson.interval;
-    }
-
-    if (autosaveJson?.enable === true) {
-      this.enable = true;
-    }
   }
 }

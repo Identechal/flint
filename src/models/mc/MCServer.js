@@ -18,32 +18,41 @@
 import { exec } from 'child_process';
 import { EOL } from 'os';
 import { join, dirname } from 'path';
-
-import { MCServerStatus } from './MCServerStatus.js';
-import { CannotStartError, CannotStopError } from './errors.js';
-import { Players } from './commands/list/Players.js';
-import { getConfig } from '../FlintConfig.js';
-import { overrideAutosave, runInitializers } from './initializers.js';
-import { JobHandler } from '../jobs/JobHandler.js';
-import { ListCommand } from './commands/list/ListCommand.js';
+import { MCServerStatus } from './MCServerStatus';
+import { CannotStartError, CannotStopError } from './errors';
+import { Players } from './commands/list/Players';
+import { getConfig } from '../config/FlintConfig';
+import { overrideAutosave, runInitializers } from './initializers';
+import { JobHandler } from '../jobs/JobHandler';
+import { ListCommand } from './commands/list/ListCommand';
+/**
+ * @typedef {import('child_process').ChildProcess} ChildProcess
+ *
+ * @typedef {import('./initializers').initializer} initializer
+ */
 
 export class MCServer {
   //#region Constants
   #DONE_PATTERN =
-    /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: Done \([^)]+\)! For help, type "help"(?:\n|\r\n)?$/;
+    /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: Done \([^)]+\)! For help, type "help"(?:\n|(?:\r\n))?$/;
 
-  #STOPPING_PATTERN = /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: Stopping the server(?:\n|\r\n)?$/;
+  #STOPPING_PATTERN =
+    /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: Stopping the server(?:\n|(?:\r\n))??$/;
   //#endregion
 
   //#region Fields
   /** @type {String} */
   #startScript;
 
-  /** @type {import('./initializers.js').Initializer[]} */
+  /** @type {initializer[]} */
   #initializers = [];
 
-  /** @type {import('child_process').ChildProcess} */
-  #process;
+  /**
+   * Child process of the Minecraft server
+   *
+   * @type {ChildProcess}
+   */
+  #server;
 
   /** @type {MCServerStatus} */
   #status;
@@ -57,7 +66,7 @@ export class MCServer {
     const { mc } = getConfig();
 
     this.#startScript = join(process.cwd(), mc.startScript);
-    this.#process = null;
+    this.#server = null;
     this.#status = MCServerStatus.STOPPED;
 
     if (mc.autoStart) {
@@ -97,7 +106,7 @@ export class MCServer {
     //#endregion
 
     // Execute script
-    this.#process = exec(
+    this.#server = exec(
       this.#startScript,
       {
         cwd: dirname(this.#startScript),
@@ -113,17 +122,17 @@ export class MCServer {
 
     // Listeners
 
-    this.#process.stdout
+    this.#server.stdout
       // Attach server output handler
       .on('data', this.#outputListener.bind(this))
       // MC output --> Flint output
       .pipe(process.stdout);
 
     // Attach exit handler
-    this.#process.once('exit', this.#exitHandler.bind(this));
+    this.#server.once('exit', this.#exitHandler.bind(this));
 
     // Flint terminal --> MC input
-    process.stdin.pipe(this.#process.stdin);
+    process.stdin.pipe(this.#server.stdin);
   }
 
   /** @throws {CannotStopError} Thrown if the MC server is not in a stoppable status. */
@@ -135,8 +144,8 @@ export class MCServer {
     console.log('[FLINT] Attempting to stop Minecraft server.');
 
     // Write 'stop' to server
-    this.#process.stdin.write('stop');
-    this.#process.stdin.write(EOL);
+    this.#server.stdin.write('stop');
+    this.#server.stdin.write(EOL);
   }
 
   //#region Commands
@@ -151,7 +160,7 @@ export class MCServer {
     }
 
     // Execute command
-    return await new ListCommand(this.#process).run();
+    return await new ListCommand(this.#server).run();
   }
   //#endregion
 
@@ -174,7 +183,7 @@ export class MCServer {
       this.#status = MCServerStatus.RUNNING;
 
       // Run initializers
-      runInitializers(this.#initializers, this.#process.stdin);
+      runInitializers(this.#initializers, this.#server.stdin);
 
       // Clear initializers
       this.#initializers = [];
@@ -208,7 +217,7 @@ export class MCServer {
 
     process.stdin
       // Flint terminal -/-> MC input
-      .unpipe(this.#process.stdin)
+      .unpipe(this.#server.stdin)
       // Listen for 'start' command
       .on('data', this.#flintStartListener.bind(this))
       .resume();

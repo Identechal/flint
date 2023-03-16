@@ -15,36 +15,28 @@
 // You should have received a copy of the GNU General Public License
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Command } from '../Command';
-import { Players } from './Players';
-
-export class ListCommand extends Command {
-  command = 'list';
-
+export class Autosave {
   /**
-   * Groups
+   * The interval, in seconds, between saving the world.
    *
-   * 1. Number of online players
-   * 2. Maximum number of players
-   * 3. (?) Comma-separated player names
+   * @type {number}
    */
-  outputPattern =
-    /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: There are (\d+) of a max of (\d+) players online: (.+)?(?:\n|(?:\r\n))?$/;
-
-  /** @returns {Promise<Players>} */
-  run() {
-    return super.run();
-  }
+  interval = 60;
 
   /**
-   * @override
-   * @inheritdoc
+   * Whether Flint will override the default autosave functionality of the MC server.
+   *
+   * @type {boolean}
    */
-  resolver(matchedOutput) {
-    return new Players(
-      parseInt(matchedOutput[1]),
-      parseInt(matchedOutput[2]),
-      matchedOutput[3] ? matchedOutput[3].split(',').map((e) => e.trim()) : []
-    );
+  enable = false;
+
+  constructor(autosaveJson) {
+    if (autosaveJson?.interval) {
+      this.interval = autosaveJson.interval;
+    }
+
+    if (autosaveJson?.enable === true) {
+      this.enable = true;
+    }
   }
 }

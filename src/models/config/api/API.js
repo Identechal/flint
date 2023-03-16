@@ -15,36 +15,30 @@
 // You should have received a copy of the GNU General Public License
 // along with Flint.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Command } from '../Command';
-import { Players } from './Players';
+import { Auth } from './auth/Auth';
 
-export class ListCommand extends Command {
-  command = 'list';
-
+export class API {
+  //#region Fields
   /**
-   * Groups
+   * Port which the Flint API listens to.
    *
-   * 1. Number of online players
-   * 2. Maximum number of players
-   * 3. (?) Comma-separated player names
+   * @type {number}
    */
-  outputPattern =
-    /^\[\d+:\d+:\d+\] \[Server thread\/INFO\]: There are (\d+) of a max of (\d+) players online: (.+)?(?:\n|(?:\r\n))?$/;
-
-  /** @returns {Promise<Players>} */
-  run() {
-    return super.run();
-  }
+  port = 25585;
 
   /**
-   * @override
-   * @inheritdoc
+   * Authentication configuration.
+   *
+   * @type {Auth}
    */
-  resolver(matchedOutput) {
-    return new Players(
-      parseInt(matchedOutput[1]),
-      parseInt(matchedOutput[2]),
-      matchedOutput[3] ? matchedOutput[3].split(',').map((e) => e.trim()) : []
-    );
+  auth;
+  //#endregion
+
+  constructor(apiJson) {
+    if (apiJson?.port) {
+      this.port = apiJson.port;
+    }
+
+    this.auth = new Auth(apiJson?.auth);
   }
 }
