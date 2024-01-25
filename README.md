@@ -24,7 +24,7 @@ Minecraft Flint Item Icon links
 160x160 ![minecraft-flint-item](https://user-images.githubusercontent.com/29645789/185534023-a7dfdb99-c2a5-462f-a701-5b45091c1642.png)
 -->
 
-# Flint ![minecraft-flint-item32](https://user-images.githubusercontent.com/29645789/185534483-309ce8d5-3c0d-4eb4-8111-8560f8a62f01.png)
+# ![Flint](https://github.com/Identechal/flint/assets/29645789/b8ab575d-d5c2-45db-99c5-e735e1e79cb8)
 
 Remote management for self-hosted Minecraft servers.
 
