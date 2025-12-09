@@ -1,0 +1,117 @@
+openapi: 3.1.0
+info:
+  title: Flint
+  description: |
+    This API allows starting and stopping a Minecraft server, as well as
+    retrieving basic information about the Minecraft server's current state.
+  version: 2.1.0
+  license: 
+    name: GPL 3.0
+    identifier: GPL-3.0-only
+servers:
+- url: http://localhost:{port}/api
+  description: Local instance of Flint
+  variables:
+    port:
+      default: "25585"
+paths:
+  /server:
+    get:
+      summary: Get the Minecraft server's current state.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    description: Status of the Minecraft server.
+                    properties:
+                      name:
+                        type: string
+                        enum: [CRASHED, RUNNING, STARTING, STOPPED, STOPPING]
+                      canStart:
+                        type: boolean
+                        description: Whether the Minecraft server can be started.
+                      canStop:
+                        type: boolean
+                        description: Whether the Minecraft server can be stopped.
+                    examples:
+                    - serverIsStopped:
+                        {
+                          "name": "STOPPED",
+                          "canStart": true,
+                          "canStop": false
+                        }
+                  list:
+                    type: object
+                    description: Player count and roster.
+                    properties:
+                      online:
+                        type: integer
+                        description: Amount of connected players.
+                        minimum: 0
+                      offline:
+                        type: integer
+                        description: Maximum amount of players.
+                        minimum: 0
+                      roster:
+                        type: array
+                        description: List of connected players' names.
+                        items:
+                          type: string
+                    examples:
+                    - fourConnectedPlayers:
+                        {
+                          "online": 4,
+                          "max": 20,
+                          "roster": ["Steve", "Alex", "Herobrine", "Notch"]
+                        }
+              examples:
+                serverIsStopped:
+                  description: Minecraft server is offline.
+                  value:
+                    {
+                      "status": {
+                        "name": "STOPPED",
+                        "canStart": true,
+                        "canStop": false
+                      },
+                      "list": {
+                        "online": 0,
+                        "max": 0,
+                        "roster": []
+                      }
+                    }
+                serverIsRunning:
+                  description: Minecraft server is running and two players are connected.
+                  value:
+                    {
+                      "status": {
+                        "name": "RUNNING",
+                        "canStart": false,
+                        "canStop": true
+                      },
+                      "list": {
+                        "online": 2,
+                        "max": 10,
+                        "roster": ["Steve", "Alex"]
+                      }
+                    }
+    post:
+      summary: Attempt to start the Minecraft server
+      responses:
+        "202":
+          description: Minecraft server will attempt to start.
+        "400":
+          description: Minecraft server is already started, or is not in a startable state.
+    delete:
+      summary: Attempt to stop the Minecraft server
+      responses:
+        "202":
+          description: Minecraft server will attempt to stop.
+        "400":
+          description: Minecraft server is already stopped, or is not in a stoppable state.
